@@ -41,7 +41,7 @@ def get_token_auth_header():
 '''
 def check_permissions(permission, payload):
     if "permissions" not in payload:
-        
+        abort(400)
 
 
 '''
