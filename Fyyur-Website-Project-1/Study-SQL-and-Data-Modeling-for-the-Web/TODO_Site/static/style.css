@@ -1,0 +1,57 @@
+.center-parent
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+body {
+    width: 1920px;
+    height: 1080px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.shadow-widget {
+
+    width: 80%;
+    height: 80%;
+    color:#424874;
+    box-shadow: 5px 5px 5px 5px #a6b1e1;
+}
+#list-items {
+    width: 80%;
+    height: 80%;
+}
+#itemsDiv ul{
+    list-style: none;
+    margin: 10px;
+    width: 300px;
+}
+#itemsDiv li {
+    clear: both;
+}
+
+#itemsDiv button , .delete-list{
+    float: right;
+    margin-bottom: 10px;
+}
+
+#itemsDiv {
+    color: #a6b1e1;
+    padding: 30px;
+    background-size: 80%;
+}
+
+#listsDiv ul li {
+    vertical-align: top;
+}
+
+#listsDiv ul {
+    list-style: none;
+}
+.delete-list {
+    display: inline-block;
+}
+#lists {
+    margin-right: 20px;
+}

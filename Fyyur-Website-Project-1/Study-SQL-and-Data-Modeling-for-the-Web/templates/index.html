@@ -1,0 +1,64 @@
+
+<!---->
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CRUD</title>
+</head>
+<body>
+	<ui id ="ui"> 
+		{% for d in data %}
+			<li> {{ d }}</li>
+		{% endfor %}
+	</ui>
+
+	<!-- it has to be POST method to copy the value attributes of the form into request.form
+		 else it will be a GET request with copy of the value attributes into the URL
+	-->
+	<form id="formRay2" action="/register" method="POST">
+		<label>Name</label><br>
+		<!-- all input form has to have a name or the values will not be sent-->
+		<input id="name" type="text" name="name" placeholder="Name" >
+		<!-- radio has to have the same "name" or all can be sellected-->
+		<input type="radio" name="r" value="ray2">
+		<input type="radio" name="r" value="notRay2">
+		<input type="submit" value="submit" >		
+	</form>
+	<!-- <script> 
+		document.querySelector("form").onsubmit = function() {
+			alert("you are not ray2");
+			return true;
+		}
+	</script> -->
+	<script> 
+		document.getElementById("formRay2").onsubmit = function(event) {
+			// prevent action of form 
+			event.preventDefault();
+			// send json data
+			fetch("/create_new_todo",{
+				headers: {     'Content-Type': 'application/json' },
+				method: 'POST',
+				body : JSON.stringify(  {'content': document.getElementById("name").value}   )
+			})
+			// must be 2 .then , i don't know why
+			.then(function(response){
+				// convert the response to extract the body
+				return response.json();
+			})
+			.then(function(jsonResponse){
+				console.log(jsonResponse);
+				// create new li item and set the data sent by the controller to inside it 
+				var item = document.createElement("li");
+				item.innerHTML= jsonResponse['content'];
+				// add new item in the list
+				document.getElementById("ui").appendChild(item);
+			})
+
+			.catch(function(){
+				alert("error");
+			})
+		}
+	</script>
+
+</body>
+</html>

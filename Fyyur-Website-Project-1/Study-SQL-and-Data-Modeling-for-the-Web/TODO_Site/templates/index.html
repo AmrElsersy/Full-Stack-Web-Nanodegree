@@ -1,0 +1,240 @@
+x`
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>ToDO</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style.css') }}">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"> <!-- Bootstrap -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> <!-- Bootstrap-Javascript -->
+	</head>
+
+	<body class="center-parent">
+		<!-- display flex style here to override the thumbnial display because it is not flex -->
+		<div class="center-parent shadow-widget thumbnail" style="display: flex;" >
+		<div class="container-fluid" id="list-items" >
+			<div class="row">
+
+				<div class="col-md-1"></div> 
+				<div id="listsDiv" class="col-md-4 padding" data-id="{{activeList}}" >
+					<form class="form-inline">
+						<input type="text" id="add-list-text" class="form-control" style="width: 65%; margin-right: 5%;">
+						<button type="submit" id="add-list-btn" class="btn btn-info" style="float: right; width: 30%;">Add List</button>
+					</form>
+					
+					<h3>Lists</h3>
+
+					<ul class="list-group">
+						{% for list in lists %}
+						<li id="lists" >
+							<div class="list-group-item row">
+								<a href="/list/{{list.id}}" data-id="{{list.id}}"  class="list-group-item col-md-9 list-text">{{ list.name }}</a>
+								<a href="/list/delete/{{list.id}}" class="btn btn-info delete-list col-md-3" 
+								  data-id="{{list.id}}" role="button">Delete</a>
+							</div>
+						</li>
+						{% endfor %}
+					</ul>
+				</div>
+
+				<div id="itemsDiv" class="col-md-4 thumbnail">					
+						<h3>Items</h3>	
+						<ul id="ul" class="list-group"> 
+							{% for d in data %}
+								<li class="list-group-item"> 
+									<input class="checkbox_Todo" data-id="{{d.id}}" type="checkbox" {% if d.completed %} checked {% endif %} > 
+									{{ d }}
+									<button class="btn btn-info delete-item" type="button" data-id= "{{d.id}}">Delete</button>
+								</li>
+							{% endfor %}
+						</ul>
+
+					<div> 
+						<form id="form_add_item" class="form-inline" action="/todo/add" method="POST">
+							<div class="form-group" style="width: 100%; padding: 10px;">
+							<input type="text" id="item-name" class="form-control">
+							<button type="submit" id="add-item-btn" class="btn btn-info" style="float: left; margin-right: 5%;">Add Item</button>
+							</div>
+						</form>
+					</div>
+				</div>
+
+				<div class="col-md-1"></div> 
+
+			</div>
+		</div>
+		</div>
+		
+	<!-- deleteItems -->
+	<script>
+		function connectDeleteBtn(deleteButton) {
+			deleteButton.onclick = function(e) {
+			var id = e.target.dataset['id'];
+			fetch("/todo/delete",{
+			headers: {'Content-Type': 'application/json' },
+						method: 'POST',
+			body : JSON.stringify(  {'id' : id} ) 
+			})
+			.then(function(response){
+			return response.json();
+			})
+			.then(function(jsonResponse) {
+				console.log(jsonResponse);
+				var sucess = jsonResponse['sucess'];
+				if(sucess)
+				{
+					var item = e.target.parentElement;
+					item.remove();
+					console.log("removed")
+				}
+			})			
+			}
+		}
+	</script>
+	<!-- checkboxs -->
+	<script>
+		function connectCheckBox(checkbox) {
+				checkbox.onchange = function(e) {
+				var checked = e.target.checked;
+				var id = e.target.dataset["id"];
+				// route to flask and pass the variables via the url request's args 
+				window.location.href = "http://127.0.0.1:5000/todo/update/" + id + "/" + checked;
+				console.log("check:",id,checked)
+			}
+		}
+	</script>
+	<!-- add Item -->
+	<script>
+		function connectAddItem() {
+			document.getElementById("add-item-btn").onclick = function(event) {
+			event.preventDefault();
+			// send json data
+			fetch("/todo/add",{
+				headers: {     'Content-Type': 'application/json' },
+				method: 'POST',
+				body : JSON.stringify(  {'content': document.getElementById("item-name").value
+										,'activeList' : getActiveList() }   )
+			})
+			.then(function(response){
+				return response.json();
+			})
+			.then(function(jsonResponse){
+				// li
+				var item = document.createElement("li"); 
+				item.className= "list-group-item";
+				// checkbox 				
+				var checkbox =  document.createElement("input"); 
+				checkbox.className="checkbox_Todo" ; 
+				checkbox.dataset["id"] = jsonResponse["id"];
+				checkbox.type="checkbox";
+				connectCheckBox(checkbox);
+				// delete button
+				var deleteBtn = document.createElement("button");
+				deleteBtn.className	= "btn btn-info delete-item";
+				deleteBtn.type="button" ;
+				deleteBtn.dataset["id"] = jsonResponse["id"];
+				deleteBtn.innerHTML= "Delete";
+				connectDeleteBtn(deleteBtn);
+				// todo content
+				var content= jsonResponse['content'];
+				// li elements
+				item.append(checkbox);
+				item.append(content);
+				item.append(deleteBtn);
+
+				document.getElementById("ul").appendChild(item);
+			})
+			.catch(function() {
+				alert("error");
+			})
+			}
+		}
+	</script>
+	<!-- add List -->
+	<script>
+		function connectAddList() {	
+				document.getElementById("add-list-btn").onclick = function(e) {
+				e.preventDefault();
+				var name = document.getElementById("add-list-text").value;
+				
+				fetch("/list/add",{
+				headers: {     'Content-Type': 'application/json' },
+				method: 'POST',
+				body : JSON.stringify(  {'name': name} )
+				})
+				.then(function(response){
+					return response.json();
+				})
+				.then(function(jsonResponse){
+					var id = jsonResponse["id"];
+					console.log(id);
+					var link1 = document.createElement("a");
+					link1.href = "/list/" + id;
+					link1.className =  "list-group-item col-md-9";
+					link1.innerHTML = name ;
+					// connect the link to set the active link with link's id when it is clicked
+					connectListText(link1);
+
+					var link2 = document.createElement("a");
+					link2.className =  "btn btn-info delete-list col-md-3";
+					link2.role="button";
+					link2.dataset["id"] = id;
+					link2.innerHTML = "Delete";
+					link2.href="/list/delete/" + toString(id);
+					
+					// div
+					var div = document.createElement("div");
+					div.className = "list-group-item row";
+					div.append(link1);
+					div.append(link2);
+
+					list_li = document.createElement("li");
+					list_li.append(div);
+					
+					lists = document.getElementById("lists");
+					lists.appendChild(list_li);
+				})
+			}
+		}
+	</script>
+	<!-- activeList  -->
+	<script>
+		function getActiveList(list) {
+			return document.getElementById("listsDiv").dataset["id"];
+		}
+		function setActiveList(id) {
+			document.getElementById("listsDiv").dataset["id"] =  id;
+			console.log("set:",id);
+		}
+		function connectListText(list) {
+			list.onclick = function () {
+				setActiveList(list.dataset["id"]);
+				console.log("connect:",list.dataset["id"]);
+			}
+		}
+	</script>
+	<script>
+		// deleteItems
+		var deleteButtons = document.getElementsByClassName("delete-item");
+		for(var i = 0 ; i < deleteButtons.length; i++) {
+			connectDeleteBtn(deleteButtons[i]);
+		}
+		// checkboxs
+		var checkboxs = document.getElementsByClassName("checkbox_Todo");
+		for(var i = 0; i < checkboxs.length; i ++)
+		{
+			connectCheckBox(checkboxs[i]);
+		}
+		
+		var listTexts = document.getElementsByClassName("list-text");
+		for(var i =0 ; i < listTexts.length; i ++)
+		{
+			connectListText(listTexts[i]);
+		}
+
+		connectAddItem();
+		connectAddList();
+	</script>
+
+</body>
+</html>
