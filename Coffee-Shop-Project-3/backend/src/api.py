@@ -11,6 +11,12 @@ app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
+@app.after_request
+def after_request(response):
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
+
 '''
 @TODO uncomment the following line to initialize the datbase
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
@@ -44,7 +50,8 @@ def getDrinks():
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks-detail" , methods=["GET"])
-def getDrinksDetails():
+@requires_auth("get:drinks-detail")
+def getDrinksDetails(jwt):
     all_drinks = Drink.query.all()
     return jsonify({
         "success" : True,
@@ -61,8 +68,10 @@ def getDrinksDetails():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+
 @app.route("/drinks",methods=["POST"])
-def postDrinks():
+@requires_auth("post:drinks")
+def postDrinks(jwt):
     try:
         data_json = request.get_json()
 
@@ -92,7 +101,8 @@ def postDrinks():
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks/<int:id>",methods=["PATCH"])
-def editDrink(id):
+@requires_auth("patch:drinks")
+def editDrink(jwt,id):
     try:
         edited_drink = Drink.query.get(id)
         if not edited_drink:
@@ -102,8 +112,9 @@ def editDrink(id):
         if "title" in data_json:
             edited_drink.title = data_json["title"]
         if "recipe" in data_json:
-            edited_drink.recipe = data_json["recipe"]
+            edited_drink.recipe = json.dumps(data_json["recipe"])
 
+        print(edited_drink)
         edited_drink.update()
 
         return jsonify ({
@@ -125,11 +136,12 @@ def editDrink(id):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
-@app.route("/drinks/<int::id>",methods=["DELETE"])
-def deleteDrink(id):
+@app.route("/drinks/<id>",methods=["DELETE"])
+@requires_auth("delete:drinks")
+def deleteDrink(jwt, id):
     try:
         deleted_drink = Drink.query.get(id)
-        if not deleteDrink:
+        if not deleted_drink:
             abort(404)
 
         deleted_drink.delete()

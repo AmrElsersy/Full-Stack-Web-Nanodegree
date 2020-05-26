@@ -26,7 +26,45 @@ class AuthError(Exception):
     return the token part of the header
 '''
 def get_token_auth_header():
-   raise Exception('Not Implemented')
+    auth = request.headers.get("Authorization",None)
+
+    if not auth :
+        raise AuthError({
+            'code': 'not found authorization',
+            'description': 'Authorization header not found'
+        }, 401)
+
+
+    auth_list = auth.split(" ")
+    
+    n = len(auth_list)
+    
+    if n == 2 :
+        bearer = auth_list[0]
+        if bearer.lower() != "bearer":
+            raise AuthError({
+                'code': 'invalid_header',
+                'description': 'Authorization header dosn`t have Bearer'
+            }, 401)
+
+
+
+        token  = auth_list[1]
+        return token
+
+    else:
+        if n == 1:
+            raise AuthError({
+                'code': 'invalid header',
+                'description': 'not found token'
+            }, 401)
+        elif n > 2 :
+            raise AuthError({
+                'code': 'invalid format',
+                'description': 'Authorization header is not baearer token format'
+            }, 401)
+
+
 
 '''
 @TODO implement check_permissions(permission, payload) method
@@ -41,8 +79,18 @@ def get_token_auth_header():
 '''
 def check_permissions(permission, payload):
     if "permissions" not in payload:
-        abort(400)
+        raise AuthError({
+            'code': 'invalid_claims',
+            'description': 'Permissions not included in JWT.'
+        }, 400)
 
+    if permission not in payload["permissions"]:
+        raise AuthError({
+            "code" : "unauthorized",
+            "description" : "Not Allowed Permession"
+        } , 403 )
+
+    return True
 
 '''
 @TODO implement verify_decode_jwt(token) method
@@ -132,9 +180,13 @@ def requires_auth(permission=''):
     def requires_auth_decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
+            # get the token from "Bearer TOKEN"
             token = get_token_auth_header()
+            # get the payload from the access token "HEADER.PAYLOAD.SIGNATURE"
             payload = verify_decode_jwt(token)
-            check_permissions(permission, payload)
+            # check the permission if only required
+            if permission != '':
+                check_permissions(permission, payload)
             return f(payload, *args, **kwargs)
 
         return wrapper
