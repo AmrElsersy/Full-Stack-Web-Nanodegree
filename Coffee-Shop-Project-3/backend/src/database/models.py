@@ -47,7 +47,12 @@ class Drink(db.Model):
         short form representation of the Drink model
     '''
     def short(self):
-        print(json.loads(self.recipe))
+        # if not self.recipe:
+        #     return {
+        #         'id' : self.id,
+        #         'title' : self.title,
+        #         "recipe" : ""
+        #     }
         short_recipe = {}
         for r in json.loads(self.recipe):
             if r == 'color' or r == 'parts':

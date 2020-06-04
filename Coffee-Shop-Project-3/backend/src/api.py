@@ -4,8 +4,8 @@ from sqlalchemy import exc
 import json
 from flask_cors import CORS
 
-from .database.models import db_drop_and_create_all, setup_db, Drink
-from .auth.auth import AuthError, requires_auth
+from database.models import db_drop_and_create_all, setup_db, Drink
+from auth.auth import AuthError, requires_auth
 
 app = Flask(__name__)
 setup_db(app)
@@ -22,41 +22,34 @@ def after_request(response):
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 '''
+
 ## ROUTES
-'''
-@TODO implement endpoint
-    GET /drinks
-        it should be a public endpoint
-        it should contain only the drink.short() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
-'''
+
 @app.route("/drinks",methods=["GET"])
 def getDrinks():
     all_drinks = Drink.query.all()
- 
+
+
     # print(">>>>>>>>>>>>>>>>>>>>")
     # for d in all_drinks:
-    #     print(d)
+    #     try:
+    #         print(d)
+    #     except :
+    #         print("Exept")
     # print(">>>>>>>>>>>>>>>>>>>>")
+
+    print('drinks' ,all_drinks)
 
     return jsonify({
         "success" : True,
         "drinks" : [drink.short() for drink in all_drinks]
     }),200
 
-'''
-@TODO implement endpoint
-    GET /drinks-detail
-        it should require the 'get:drinks-detail' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
-'''
 @app.route("/drinks-detail" , methods=["GET"])
 @requires_auth("get:drinks-detail")
 def getDrinksDetails(jwt):
     all_drinks = Drink.query.all()
+    print('details' ,all_drinks)
     return jsonify({
         "success" : True,
         "drinks" : [drink.long() for drink in all_drinks]
@@ -85,7 +78,7 @@ def postDrinks(jwt):
         new_title = data_json["title"]
         new_recipe = data_json["recipe"]
 
-        new_drink = Drink(title = new_title, recipe = json.dumps(new_recipe) )
+        new_drink = Drink(title = new_title, recipe = json.dumps(new_recipe))
         new_drink.insert()
 
         return jsonify({"success": True, "drinks": [new_drink.long()] } )
@@ -189,3 +182,8 @@ def handle_auth_error(error):
         "error": error.status_code,
         'message': error.error
     }), 401
+
+
+
+if __name__ == '__main__':
+    app.run(use_reloader=False)
