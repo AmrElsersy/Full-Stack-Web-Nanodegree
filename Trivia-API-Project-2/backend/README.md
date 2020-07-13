@@ -313,10 +313,19 @@
 - report a bad question to the admin (only for user)
 - Request : POST 127.0.0.1:5000/reports
 ``` 
+{
+	"user_id": 25,
+	"question_id": 42
+}
 ```
 - Response :
 ``` 
 {
+    "report": {
+        "id": 41,
+        "question_id": 42,
+        "user_id": 25
+    },
     "success": true
 }
 ```
