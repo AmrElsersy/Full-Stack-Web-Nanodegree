@@ -25,34 +25,11 @@
 ### Tokens :
 ### All endpoints is tested on Postman
 ####
-* GET /reports
-- return all the reports that get reported by users
-- Request : GET 127.0.0.1:5000/reports
-``` 
-```
-- Response :
-``` 
-{
-    "reports": [
-        {
-            "id": 7,
-            "question_id": 33,
-            "user_id": 25
-        },
-        {
-            "id": 100,
-            "question_id": 100,
-            "user_id": 100
-        }
-    ],
-    "success": true
-}
-```
 
 
-* GET /questions/id
+* GET /questions/<id>
 - get the data of a specific question
-- Request : 127.0.0.1:5000/questions/26
+- Request : GET 127.0.0.1:5000/questions/26
 ``` 
 ```
 - Request Arguments : None
@@ -70,9 +47,144 @@
 }
 ```
 
+* DELETE /questions/<id>
+- get the data of a specific question
+- Request : DELETE 127.0.0.1:5000/questions/33
+- Response :
+``` 
+{
+	"success": True
+}
+```
+
+* PATCH /questions/<id>
+- get the data of a specific question
+- Request : PATCH 127.0.0.1:5000/questions/26
+```
+{
+	"answer" : "answer to question",
+	"reacts" : 3
+}
+```
+- Response :
+``` 
+{
+"success": True,
+"question": {
+        "answer": " answer to question",
+        "content": "how are you sersy? ",
+        "id": 26,
+        "is_answered": false,
+        "reacts": 3,
+        "user_id": 25
+    }
+}
+```
+
+* GET /questions/<int:id>/replys
+- get the replys of the question ( reply is another question but is a child of queistion with <id>)
+- Request : GET 127.0.0.1:5000/questions/100/replys
+- Request Arguments : 
+- Response :
+``` 
+{
+    "reply": [
+        {
+            "answer": null,
+            "content": "test_reply",
+            "id": 42,
+            "is_answered": false,
+            "reacts": 0,
+            "user_id": 25
+        }
+    ],
+    "success": true
+}
+```
+
+* POST /questions/<int:id>/replys
+- add another question as a reply (continue asking) to that question (like in ask-fm)
+- Request : POST 127.0.0.1:5000/questions/100/replys
+- Request Arguments : reply:string contains the question reply, asker_id is the id of the user that is asking
+```
+{
+	"reply" : "continue asking... reply ???",
+	"asker_id" : 101
+}
+```
+- Response : id : is the id of the added reply question
+``` 
+{
+    "id": 153,
+    "success": true
+}
+```
+
+
+
+===================================
+* GET /users/<int:id>
+- get the user info like name, picture
+- Request : GET 127.0.0.1:5000/users/28
+- Request Arguments :  None
+- Response :
+``` 
+{
+    "questions": [],
+    "success": true,
+    "user": {
+        "id": 28,
+        "name": "sersy",
+        "picture": null
+    }
+}
+```
+
+* PATCH /users/<int:id>
+- get the user info like name, picture
+- Request : PATCH 127.0.0.1:5000/users/28
+- Request Arguments :  
+```
+{
+	"name" : "mahmoud sersy",
+	"picture": "link to his picture"
+}
+```
+- Response :
+``` 
+{
+    "success": true,
+    "user": {
+        "id": 28,
+	"name" : "mahmoud sersy",
+	"picture": "link to his picture"
+    }
+}
+```
+
+* GET users/<int:id>/asked_questions
+- get the questions that the user asked
+- Request : GET 127.0.0.1:5000/users/28/asked_questions
+- Response :
+``` 
+{
+	"questions": [
+		{
+			"content": "test question",
+			"answer": "test answer",
+			"user_id": 25
+			"id" : 100
+			"reacts" : 3
+		}
+	]
+}
+```
+
+
+
 * GET /users/<int:id>/questions
 - get the questions that asked to the user
-- Request : 127.0.0.1:5000/users/25/questions
+- Request : GET 127.0.0.1:5000/users/25/questions
 - Response 
 ```
 {
@@ -123,15 +235,6 @@
 ```
 
 
-example : 
-{
-	"content" : "question .... ?",
-	"asker_id": 12
-}
-return {
-	
-}
-
 * POST /users/<int:id>/questions
 - ask question to the user
 - Request : POST 127.0.0.1:5000/users/28/questions
@@ -149,23 +252,6 @@ return {
 }
 ```
 
-* GET users/<int:id>/asked_questions
-- get the questions that the user asked
-- Request : GET 127.0.0.1:5000/users/28/asked_questions
-- Response :
-``` 
-{
-	"questions": [
-		{
-			"content": "test question",
-			"answer": "test answer",
-			"user_id": 25
-			"id" : 100
-			"reacts" : 3
-		}
-	]
-}
-```
 
 * GET /users/<int:id>/followers
 - get the followers that the user with <id> follows
@@ -196,30 +282,73 @@ return {
 }
 ```
 
-* GET /
-- 
-- Request :
-``` 
 
+=========================================
+
+* GET /reports
+- return all the reports that get reported by users (only for admin)
+- Request : GET 127.0.0.1:5000/reports
+``` 
 ```
-- Request Arguments : 
 - Response :
 ``` 
-
+{
+    "reports": [
+        {
+            "id": 7,
+            "question_id": 33,
+            "user_id": 25
+        },
+        {
+            "id": 100,
+            "question_id": 100,
+            "user_id": 100
+        }
+    ],
+    "success": true
+}
 ```
 
-* GET /
-- 
-- Request :
+* POST /reports 
+- report a bad question to the admin (only for user)
+- Request : POST 127.0.0.1:5000/reports
 ``` 
-
 ```
-- Request Arguments : 
 - Response :
 ``` 
-
+{
+    "success": true
+}
 ```
 
+
+
+* GET /reports/<int:id>
+- return a specific report that get reported by users (only for admin)
+- Request : GET 127.0.0.1:5000/reports/7
+- Response :
+``` 
+{
+    "report":
+        {
+            "id": 7,
+            "question_id": 33,
+            "user_id": 25
+        },
+    "success": true
+}
+```
+
+* DELETE /reports/<int:id>
+- Delete a report (only for admin)
+- Request : DELETE 127.0.0.1:5000/reports/200
+- Response :
+``` 
+{
+	"deleted_report": 200,
+	"success": true
+}
+```
 
 
 
